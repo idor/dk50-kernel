@@ -19,3 +19,5 @@
 /include/ "dsi-panel-jdi-dualmipi1-video.dtsi"
 /include/ "dsi-panel-jdi-dualmipi0-cmd.dtsi"
 /include/ "dsi-panel-jdi-dualmipi1-cmd.dtsi"
+/include/ "dsi-panel-hx8379a-wvga-video.dtsi"
+/include/ "dsi-panel-hx8379c-wvga-video.dtsi"

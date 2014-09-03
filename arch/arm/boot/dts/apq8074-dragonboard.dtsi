@@ -11,6 +11,7 @@
  */
 
 /include/ "dsi-panel-sharp-qhd-video.dtsi"
+/include/ "dsi-panel-hx8379a-wvga-video.dtsi"
 /include/ "msm8974-camera-sensor-dragonboard.dtsi"
 /include/ "msm8974-leds.dtsi"
 /include/ "msm-rdbg.dtsi"
@@ -25,7 +26,7 @@
 	};
 
 	qcom,mdss_dsi@fd922800 {
-		qcom,dsi-pref-prim-pan = <&dsi_sharp_qhd_vid>;
+		qcom,dsi-pref-prim-pan = <&dsi_hx8379c_wvga_vid>;
 	};
 
 	qcom,mdss_mdp@fd900000 {
@@ -110,6 +111,23 @@
 
 	i2c@f9923000 {
 		status = "ok";
+		synaptics@20 {
+			compatible = "synaptics,rmi4";
+			reg = <0x20>;
+			interrupt-parent = <&msmgpio>;
+			interrupts = <61 0x2>;
+			vdd-supply = <&pm8941_l18>;
+			vcc_i2c-supply = <&pm8941_s3>;
+			synaptics,reset-gpio = <&msmgpio 60 0x00>;
+			synaptics,irq-gpio = <&msmgpio 61 0x00>;
+			synaptics,panel-coords = <0  0 531 1107>;
+			synaptics,display-coords = <0 0 480 854>;
+			synaptics,button-map= <139 102 158>;
+			synaptics,i2c-pull-up;
+			synaptics,power-down;
+			synaptics,disable-gpios;
+			synaptics,do-lockdown;
+		};
 		atmel_mxt_ts@4a {
 			compatible = "atmel,mxt-ts";
 			reg = <0x4a>;
@@ -577,7 +595,7 @@
 			qcom,ctrl-delay-us = <0>;
 			qcom,boost-curr-lim = <3>;
 			qcom,cp-sel = <0>;
-			qcom,switch-freq = <2>;
+			qcom,switch-freq = <11>;
 			qcom,ovp-val = <1>;
 			qcom,num-strings = <1>;
 			qcom,id = <0>;
@@ -668,6 +686,6 @@
 	status = "ok";
 };
 
-&dsi_sharp_qhd_vid {
+&dsi_hx8379c_wvga_vid {
 	qcom,cont-splash-enabled;
 };
