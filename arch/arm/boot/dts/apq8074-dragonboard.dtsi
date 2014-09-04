@@ -11,7 +11,7 @@
  */
 
 /include/ "dsi-panel-sharp-qhd-video.dtsi"
-/include/ "dsi-panel-hx8379a-wvga-video.dtsi"
+/include/ "dsi-panel-hx8379c-wvga-video.dtsi"
 /include/ "msm8974-camera-sensor-dragonboard.dtsi"
 /include/ "msm8974-leds.dtsi"
 /include/ "msm-rdbg.dtsi"
