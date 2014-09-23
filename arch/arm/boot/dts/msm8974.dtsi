@@ -260,7 +260,8 @@
 		compatible = "qcom,hsusb-otg";
 		status = "disabled";
 
-		reg = <0xf9a55000 0x400>;
+		reg = <0xf9a55000 0x400>,
+			 <0xfd4ab000 0x4>;
 		interrupts = <0 134 0 0 140 0>;
 		interrupt-names = "core_irq", "async_irq";
 		HSUSB_VDDCX-supply = <&pm8841_s2_corner>;

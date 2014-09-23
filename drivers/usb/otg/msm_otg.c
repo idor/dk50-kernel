@@ -543,19 +543,19 @@ static void usb_phy_reset(struct msm_otg *motg)
 		return;
 
 	/* Assert USB PHY_PON */
-	val =  readl_relaxed(USB_PHY_CTRL);
+	val =  readl_relaxed(motg->usb_phy_ctrl_reg);
 	val &= ~PHY_POR_BIT_MASK;
 	val |= PHY_POR_ASSERT;
-	writel_relaxed(val, USB_PHY_CTRL);
+	writel_relaxed(val, motg->usb_phy_ctrl_reg);
 
 	/* wait for minimum 10 microseconds as suggested in HPG. */
 	usleep_range(10, 15);
 
 	/* Deassert USB PHY_PON */
-	val =  readl_relaxed(USB_PHY_CTRL);
+	val =  readl_relaxed(motg->usb_phy_ctrl_reg);
 	val &= ~PHY_POR_BIT_MASK;
 	val |= PHY_POR_DEASSERT;
-	writel_relaxed(val, USB_PHY_CTRL);
+	writel_relaxed(val, motg->usb_phy_ctrl_reg);
 
 	/* Ensure that RESET operation is completed. */
 	mb();
@@ -1026,7 +1026,7 @@ static int msm_otg_suspend(struct msm_otg *motg)
 	if (motg->caps & ALLOW_PHY_RETENTION && !device_bus_suspend && !dcp &&
 		 (!host_bus_suspend || ((motg->caps & ALLOW_HOST_PHY_RETENTION)
 		&& (pdata->dpdm_pulldown_added || !(portsc & PORTSC_CCS))))) {
-		phy_ctrl_val = readl_relaxed(USB_PHY_CTRL);
+		phy_ctrl_val = readl_relaxed(motg->usb_phy_ctrl_reg);
 		if (motg->pdata->otg_control == OTG_PHY_CONTROL) {
 			/* Enable PHY HV interrupts to wake MPM/Link */
 			if ((motg->pdata->mode == USB_OTG) ||
@@ -1040,7 +1040,8 @@ static int msm_otg_suspend(struct msm_otg *motg)
 			phy_ctrl_val |= PHY_CLAMP_DPDMSE_EN;
 
 		if (!(motg->caps & ALLOW_VDD_MIN_WITH_RETENTION_DISABLED)) {
-			writel_relaxed(phy_ctrl_val & ~PHY_RETEN, USB_PHY_CTRL);
+			writel_relaxed(phy_ctrl_val & ~PHY_RETEN,
+						motg->usb_phy_ctrl_reg);
 			motg->lpm_flags |= PHY_RETENTIONED;
 		} else {
 			writel_relaxed(phy_ctrl_val, USB_PHY_CTRL);
@@ -1189,14 +1190,14 @@ static int msm_otg_resume(struct msm_otg *motg)
 		(motg->caps & ALLOW_VDD_MIN_WITH_RETENTION_DISABLED)) {
 		msm_hsusb_mhl_switch_enable(motg, 1);
 		msm_hsusb_config_vddcx(1);
-		phy_ctrl_val = readl_relaxed(USB_PHY_CTRL);
+		phy_ctrl_val = readl_relaxed(motg->usb_phy_ctrl_reg);
 		phy_ctrl_val |= PHY_RETEN;
 		if (motg->pdata->otg_control == OTG_PHY_CONTROL)
 			/* Disable PHY HV interrupts */
 			phy_ctrl_val &=
 				~(PHY_IDHV_INTEN | PHY_OTGSESSVLDHV_INTEN);
 		phy_ctrl_val &= ~(PHY_CLAMP_DPDMSE_EN);
-		writel_relaxed(phy_ctrl_val, USB_PHY_CTRL);
+		writel_relaxed(phy_ctrl_val, motg->usb_phy_ctrl_reg);
 		motg->lpm_flags &= ~PHY_RETENTIONED;
 	}
 
@@ -4285,6 +4286,7 @@ static int __init msm_otg_probe(struct platform_device *pdev)
 	struct msm_otg *motg;
 	struct usb_phy *phy;
 	struct msm_otg_platform_data *pdata;
+	void __iomem *tcsr;
 
 	dev_info(&pdev->dev, "msm_otg probe\n");
 
@@ -4433,6 +4435,10 @@ static int __init msm_otg_probe(struct platform_device *pdev)
 		goto disable_sleep_clk;
 	}
 	dev_info(&pdev->dev, "OTG regs = %p\n", motg->regs);
+	if (pdata->enable_sec_phy)
+		motg->usb_phy_ctrl_reg = USB_PHY_CTRL2;
+	else
+		motg->usb_phy_ctrl_reg = USB_PHY_CTRL;
 
 	motg->irq = platform_get_irq(pdev, 0);
 	if (!motg->irq) {
@@ -4537,6 +4543,26 @@ static int __init msm_otg_probe(struct platform_device *pdev)
 		goto free_ldo_init;
 	}
 	clk_prepare_enable(motg->core_clk);
+
+	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+	if (!res) {
+		dev_dbg(&pdev->dev, "missing TCSR memory resource\n");
+	} else {
+		tcsr = devm_ioremap_nocache(&pdev->dev, res->start,
+			resource_size(res));
+		if (!tcsr) {
+			dev_dbg(&pdev->dev, "tcsr ioremap failed\n");
+		} else {
+			/* Enable USB3 on the primary USB port. */
+			writel_relaxed(0x1, tcsr);
+			/*
+			 * Ensure that TCSR write is completed before
+			 * USB registers initialization.
+			 */
+			mb();
+		}
+	}
+
 
 	/* Check if USB mem_type change is needed to workaround PNOC hw issue */
 	msm_otg_pnoc_errata_fix(motg);

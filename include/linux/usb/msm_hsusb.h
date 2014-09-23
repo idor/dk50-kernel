@@ -361,6 +361,7 @@ struct msm_otg {
 	long core_clk_rate;
 	struct resource *io_res;
 	void __iomem *regs;
+	void __iomem *usb_phy_ctrl_reg;
 #define ID		0
 #define B_SESS_VLD	1
 #define ID_A		2
