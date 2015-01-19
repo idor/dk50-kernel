@@ -94,19 +94,26 @@
 			cell-index = <0>;
 			compatible = "qcom,mdss-fb";
 			qcom,memory-reservation-type = "EBI1";
-			qcom,memory-reservation-size = <0x800000>;
+			qcom,memory-reservation-size = <0x1000000>;
 			qcom,memblock-reserve = <0x03200000 0x01E00000>;
+		/*	qcom,mdss-fb-split = <800 800>; */
+		};
+
+		mdss_fb3: qcom,mdss_fb_secondary {
+			cell-index = <3>;
+			compatible = "qcom,mdss-fb";
 		};
 
 		mdss_fb1: qcom,mdss_fb_external {
 			cell-index = <1>;
 			compatible = "qcom,mdss-fb";
 		};
-
+/*
 		mdss_fb2: qcom,mdss_fb_wfd {
 			cell-index = <2>;
 			compatible = "qcom,mdss-fb";
 		};
+*/
 	};
 
 	mdss_dsi0: qcom,mdss_dsi@fd922800 {
@@ -114,7 +121,7 @@
 		label = "MDSS DSI CTRL->0";
 		cell-index = <0>;
 		reg = <0xfd922800 0x600>;
-		vdd-supply = <&pm8941_l22>;
+		vdd-supply = <&dsi_vdd_regulator>;
 		vddio-supply = <&pm8941_l12>;
 		vdda-supply = <&pm8941_l2>;
 		qcom,mdss-fb-map = <&mdss_fb0>;
@@ -170,10 +177,10 @@
 		label = "MDSS DSI CTRL->1";
 		cell-index = <1>;
 		reg = <0xfd922e00 0x600>;
-		vdd-supply = <&pm8941_l22>;
-		vddio-supply = <&pm8941_l12>;
-		vdda-supply = <&pm8941_l2>;
-		qcom,mdss-fb-map = <&mdss_fb0>;
+		vdd-supply = <&dsi_vdd_regulator>;   
+		vddio-supply = <&pm8941_l12>; 
+		vdda-supply = <&pm8941_l2>; 
+		qcom,mdss-fb-map = <&mdss_fb3>;
 		qcom,mdss-mdp = <&mdss_mdp>;
 		qcom,platform-strength-ctrl = [ff 06];
 		qcom,platform-bist-ctrl = [00 00 b1 ff 00 00];
@@ -227,7 +234,7 @@
 		reg-names = "core_physical", "phy_physical", "qfprom_physical";
 
 		hpd-gdsc-supply = <&gdsc_mdss>;
-		hpd-5v-supply = <&pm8941_mvs2>;
+		hpd-5v-supply = <&pm8941_boost>;
 		core-vdda-supply = <&pm8941_l12>;
 		core-vcc-supply = <&pm8941_s3>;
 		qcom,hdmi-tx-supply-names = "hpd-gdsc", "hpd-5v", "core-vdda", "core-vcc";
@@ -245,7 +252,7 @@
 		};
 	};
 
-	qcom,mdss_wb_panel {
+/*	qcom,mdss_wb_panel {
 		compatible = "qcom,mdss_wb";
 		qcom,mdss_pan_res = <1920 1080>;
 		qcom,mdss_pan_bpp = <24>;
@@ -261,6 +268,13 @@
 		gpio-panel-en = <&msmgpio 58 0>;
 		qcom,mdss-fb-map = <&mdss_fb0>;
 		gpio-panel-hpd = <&msmgpio 102 0>;
+	};
+*/	
+	dsi_vdd_regulator:dsi_vdd_regulator {
+		compatible = "regulator-fixed";
+		regulator-name = "dsi_vdd_regulator";
+		regulator-always-on;
+		status = "okay";
 	};
 };
 

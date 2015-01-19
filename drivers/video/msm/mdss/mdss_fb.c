@@ -276,14 +276,18 @@ static void mdss_fb_parse_dt(struct msm_fb_data_type *mfd)
 	mfd->splash_logo_enabled = of_property_read_bool(pdev->dev.of_node,
 				"qcom,mdss-fb-splash-logo-enabled");
 
-	if (of_property_read_u32_array(pdev->dev.of_node, "qcom,mdss-fb-split",
-				       data, 2))
+        if (of_property_read_u32_array(pdev->dev.of_node,"qcom,mdss-fb-split", data, 2) == -EINVAL)
+	 {
+		pr_err("Unable to read mdss-fb-split\n");
 		return;
-	if (data[0] && data[1] &&
-	    (mfd->panel_info->xres == (data[0] + data[1]))) {
+        }
+	
+//	if (data[0] && data[1] && (mfd->panel_info->xres == (data[0] + data[1])))
+        if (data[0] && data[1])
+	{
 		mfd->split_fb_left = data[0];
 		mfd->split_fb_right = data[1];
-		pr_info("split framebuffer left=%d right=%d\n",
+		pr_err("split framebuffer left=%d right=%d\n",
 			mfd->split_fb_left, mfd->split_fb_right);
 	} else {
 		mfd->split_fb_left = 0;
@@ -2070,9 +2074,7 @@ static int mdss_fb_handle_buf_sync_ioctl(struct msm_sync_pt_data *sync_pt_data,
 	}
 
 	if (sync_pt_data->acq_fen_cnt) {
-		pr_warn("%s: currently %d fences active. waiting...\n",
-				sync_pt_data->fence_name,
-				sync_pt_data->acq_fen_cnt);
+		//pr_warn("%s: currently %d fences active. waiting...\n",	sync_pt_data->fence_name,sync_pt_data->acq_fen_cnt);
 		mdss_fb_wait_for_fence(sync_pt_data);
 	}
 

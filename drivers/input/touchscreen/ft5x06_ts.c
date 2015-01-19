@@ -344,6 +344,12 @@ static irqreturn_t ft5x06_ts_interrupt(int irq, void *dev_id)
 		y = (buf[FT_TOUCH_Y_H_POS + FT_ONE_TCH_LEN * i] & 0x0F) << 8 |
 			(buf[FT_TOUCH_Y_L_POS + FT_ONE_TCH_LEN * i]);
 
+		if(data->pdata->mirror_h)
+			x=data->pdata->x_max-x;
+		if(data->pdata->mirror_v)
+			y=data->pdata->y_max-y;
+	
+			
 		status = buf[FT_TOUCH_EVENT_POS + FT_ONE_TCH_LEN * i] >> 6;
 
 		num_touches = buf[FT_TD_STATUS] & FT_STATUS_NUM_TP_MASK;
@@ -1338,6 +1344,9 @@ static int ft5x06_parse_dt(struct device *dev,
 
 	pdata->ignore_id_check = of_property_read_bool(np,
 						"focaltech,ignore-id-check");
+
+	pdata->mirror_h = of_property_read_bool(np,"focaltech,mirror_h");
+	pdata->mirror_v = of_property_read_bool(np,"focaltech,mirror_v");
 
 	rc = of_property_read_u32(np, "focaltech,family-id", &temp_val);
 	if (!rc)

@@ -61,6 +61,8 @@ struct ft5x06_ts_platform_data {
 	bool ignore_id_check;
 	int (*power_init) (bool);
 	int (*power_on) (bool);
+	bool mirror_h;
+	bool mirror_v;
 };
 
 #endif
