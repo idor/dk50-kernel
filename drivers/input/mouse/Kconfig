@@ -12,6 +12,12 @@ menuconfig INPUT_MOUSE
 
 if INPUT_MOUSE
 
+config MOUSE_AVMS
+	bool "virtual mouse" if EXPERT
+	default y
+	help
+	  virtual mouse support
+
 config MOUSE_PS2
 	tristate "PS/2 mouse"
 	default y
