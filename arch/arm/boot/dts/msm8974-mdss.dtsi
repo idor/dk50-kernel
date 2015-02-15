@@ -94,9 +94,9 @@
 			cell-index = <0>;
 			compatible = "qcom,mdss-fb";
 			qcom,memory-reservation-type = "EBI1";
-			qcom,memory-reservation-size = <0x1000000>;
-			qcom,memblock-reserve = <0x03200000 0x01E00000>;
-		/*	qcom,mdss-fb-split = <800 800>; */
+			qcom,memory-reservation-size = <0x1020000>;
+			//qcom,memblock-reserve = <0x03200000 0x01E00000>;
+			qcom,mdss-fb-split = <1366 1366>;
 		};
 
 		mdss_fb3: qcom,mdss_fb_secondary {
@@ -180,7 +180,7 @@
 		vdd-supply = <&dsi_vdd_regulator>;   
 		vddio-supply = <&pm8941_l12>; 
 		vdda-supply = <&pm8941_l2>; 
-		qcom,mdss-fb-map = <&mdss_fb3>;
+		qcom,mdss-fb-map = <&mdss_fb0>;
 		qcom,mdss-mdp = <&mdss_mdp>;
 		qcom,platform-strength-ctrl = [ff 06];
 		qcom,platform-bist-ctrl = [00 00 b1 ff 00 00];
