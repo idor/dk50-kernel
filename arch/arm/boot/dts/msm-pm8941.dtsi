@@ -68,7 +68,7 @@
 			qcom,s1-timer = <0>;
 			qcom,s2-timer = <2000>;
 			qcom,s2-type = <1>;
-			linux,code = <114>;
+			linux,code = <158>;
 			qcom,use-bark;
 		};
 

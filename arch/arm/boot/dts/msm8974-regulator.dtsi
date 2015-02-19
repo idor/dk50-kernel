@@ -353,22 +353,22 @@
 	};
 
 	rpm-regulator-ldoa17 {
-		status = "disabled";
+		status = "okay";
 		pm8941_l17: regulator-l17 {
 			regulator-min-microvolt = <2850000>;
 			regulator-max-microvolt = <2850000>;
 			qcom,init-voltage = <2850000>;
-			status = "disabled";
+			status = "okay";
 		};
 	};
 
 	rpm-regulator-ldoa18 {
-		status = "disabled";
+		status = "okay";
 		pm8941_l18: regulator-l18 {
 			regulator-min-microvolt = <2850000>;
 			regulator-max-microvolt = <2850000>;
 			qcom,init-voltage = <2850000>;
-			status = "disabled";
+			status = "okay";
 		};
 	};
 
