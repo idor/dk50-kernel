@@ -360,6 +360,8 @@ static int mdss_mdp_overlay_pipe_setup(struct msm_fb_data_type *mfd,
 	struct mdp_histogram_start_req hist;
 	int ret;
 	u32 bwc_enabled;
+	int x_lumus_frame_offset;
+	int y_lumus_frame_offset;
 
 	if (mdp5_data->ctl == NULL)
 		return -ENODEV;
@@ -478,14 +480,26 @@ static int mdss_mdp_overlay_pipe_setup(struct msm_fb_data_type *mfd,
 		pipe->bwc_mode = pipe->mixer->rotator_mode ?
 			0 : (bwc_enabled ? 1 : 0) ;
 	}
+
+
 	pipe->img_width = req->src.width & 0x3fff;
 	pipe->img_height = req->src.height & 0x3fff;
 	pipe->src.x = req->src_rect.x;
 	pipe->src.y = req->src_rect.y;
 	pipe->src.w = req->src_rect.w;
 	pipe->src.h = req->src_rect.h;
-	pipe->dst.x = req->dst_rect.x;
-	pipe->dst.y = req->dst_rect.y;
+	if(pipe->mixer->num == 0)
+	{
+		x_lumus_frame_offset = 0;
+		y_lumus_frame_offset = 48;
+	}
+	else
+	{
+		x_lumus_frame_offset = 86;
+		y_lumus_frame_offset = 0;
+	}
+	pipe->dst.x = req->dst_rect.x + x_lumus_frame_offset;
+	pipe->dst.y = req->dst_rect.y + y_lumus_frame_offset;
 	pipe->dst.w = req->dst_rect.w;
 	pipe->dst.h = req->dst_rect.h;
 	pipe->horz_deci = req->horz_deci;

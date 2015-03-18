@@ -1085,7 +1085,7 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
 		var = info->var;
 		unlock_fb_info(info);
 		//lumus hack:
-		var.xres = 1280;
+		var.xres = 1280*2;
 		var.yres = 720;
 
 		ret = copy_to_user(argp, &var, sizeof(var)) ? -EFAULT : 0;
