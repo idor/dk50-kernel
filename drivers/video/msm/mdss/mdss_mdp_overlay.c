@@ -22,6 +22,7 @@
 #include <linux/uaccess.h>
 #include <linux/delay.h>
 #include <linux/msm_mdp.h>
+#include <linux/console.h>
 #include <linux/memblock.h>
 #include <linux/sw_sync.h>
 
@@ -348,6 +349,11 @@ static inline void __mdss_mdp_overlay_set_chroma_sample(
 		pipe->chroma_sample_v = 0;
 }
 
+static int lumus_loffset_x = 0;
+static int lumus_loffset_y = 0;
+static int lumus_roffset_x = 0;
+static int lumus_roffset_y = 0;
+
 static int mdss_mdp_overlay_pipe_setup(struct msm_fb_data_type *mfd,
 				       struct mdp_overlay *req,
 				       struct mdss_mdp_pipe **ppipe)
@@ -360,8 +366,6 @@ static int mdss_mdp_overlay_pipe_setup(struct msm_fb_data_type *mfd,
 	struct mdp_histogram_start_req hist;
 	int ret;
 	u32 bwc_enabled;
-	int x_lumus_frame_offset;
-	int y_lumus_frame_offset;
 
 	if (mdp5_data->ctl == NULL)
 		return -ENODEV;
@@ -488,18 +492,14 @@ static int mdss_mdp_overlay_pipe_setup(struct msm_fb_data_type *mfd,
 	pipe->src.y = req->src_rect.y;
 	pipe->src.w = req->src_rect.w;
 	pipe->src.h = req->src_rect.h;
-	if(pipe->mixer->num == 0)
-	{
-		x_lumus_frame_offset = 0;
-		y_lumus_frame_offset = 48;
+	if (pipe->mixer->num == 0) {
+		pipe->dst.x = req->dst_rect.x + lumus_loffset_x;
+		pipe->dst.y = req->dst_rect.y + lumus_loffset_y;
+	} else {
+		pipe->dst.x = req->dst_rect.x + lumus_roffset_x;
+		pipe->dst.y = req->dst_rect.y + lumus_roffset_y;
 	}
-	else
-	{
-		x_lumus_frame_offset = 86;
-		y_lumus_frame_offset = 0;
-	}
-	pipe->dst.x = req->dst_rect.x + x_lumus_frame_offset;
-	pipe->dst.y = req->dst_rect.y + y_lumus_frame_offset;
+
 	pipe->dst.w = req->dst_rect.w;
 	pipe->dst.h = req->dst_rect.h;
 	pipe->horz_deci = req->horz_deci;
@@ -1852,13 +1852,40 @@ static ssize_t mdss_mdp_ad_store(struct device *dev,
 }
 
 
+static ssize_t mdss_mdp_lumus_offset_show(struct device *dev,
+		struct device_attribute *attr, char *buf) {
+	int ret = -1;
+	ret = sprintf(buf, "%d %d %d %d", lumus_loffset_x, lumus_loffset_y,
+			lumus_roffset_x, lumus_roffset_y);
+	pr_info("[ldx,ldy]: %d,%d\n [rdx,rdy]: %d,%d\n", lumus_loffset_x,
+			lumus_loffset_y, lumus_roffset_x, lumus_roffset_y);
+	return ret;
+}
+
+static ssize_t mdss_mdp_lumus_offset_store(struct device *device,
+		struct device_attribute *attr, const char *buf, size_t count) {
+	int ret = -1;
+	console_lock();
+	ret = sscanf(buf, "%d %d %d %d", &lumus_loffset_x, &lumus_loffset_y,
+			&lumus_roffset_x, &lumus_roffset_y);
+	console_unlock();
+	if (ret < 0) {
+		pr_err("failed to parse input buffer use: [ldx ldy rdx rdy], return %d",
+				ret);
+		return ret;
+	}
+	return count;
+}
+
 static DEVICE_ATTR(vsync_event, S_IRUGO, mdss_mdp_vsync_show_event, NULL);
+static DEVICE_ATTR(lumus_offset, S_IRUGO | S_IWUSR | S_IWGRP, mdss_mdp_lumus_offset_show, mdss_mdp_lumus_offset_store);
 static DEVICE_ATTR(ad, S_IRUGO | S_IWUSR | S_IWGRP, mdss_mdp_ad_show,
 	mdss_mdp_ad_store);
 
 static struct attribute *mdp_overlay_sysfs_attrs[] = {
 	&dev_attr_vsync_event.attr,
 	&dev_attr_ad.attr,
+	&dev_attr_lumus_offset.attr,
 	NULL,
 };
 
