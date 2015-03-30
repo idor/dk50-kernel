@@ -320,14 +320,58 @@ static ssize_t mdss_mdp_show_blank_event(struct device *dev,
 	return ret;
 }
 
+enum resolution {
+	LUMUS_2D = 1, LUMUS_3D,
+};
+
+int lumus_resolution = LUMUS_2D;
+
+
+static ssize_t mdss_mdp_lumus_res_double_show(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	int ret = -1;
+	if (lumus_resolution == LUMUS_3D)
+		ret = sprintf(buf, "%d", 1);
+	else
+		ret = sprintf(buf, "%d", 0);
+	return ret;
+}
+
+static ssize_t mdss_mdp_lumus_res_double_store(struct device *device,
+		struct device_attribute *attr, const char *buf, size_t count) {
+	int ret = -1;
+	int tmp = 0;
+
+	console_lock();
+	ret = sscanf(buf, "%d", &tmp);
+	console_unlock();
+	if (ret < 0) {
+		pr_err(
+				"failed to parse input buffer use: 0 for 2D, 1 for 3D, return %d",
+				ret);
+		return ret;
+	}
+
+	if (tmp != 0)
+		lumus_resolution = LUMUS_3D;
+	else
+		lumus_resolution = LUMUS_2D;
+
+	return count;
+}
+
+
 static DEVICE_ATTR(msm_fb_type, S_IRUGO, mdss_fb_get_type, NULL);
 static DEVICE_ATTR(msm_fb_split, S_IRUGO, mdss_fb_get_split, NULL);
 static DEVICE_ATTR(show_blank_event, S_IRUGO, mdss_mdp_show_blank_event, NULL);
+static DEVICE_ATTR(lumus_resolution_double, S_IRUGO | S_IWUSR | S_IWGRP , mdss_mdp_lumus_res_double_show, mdss_mdp_lumus_res_double_store);
 
 static struct attribute *mdss_fb_attrs[] = {
 	&dev_attr_msm_fb_type.attr,
 	&dev_attr_msm_fb_split.attr,
 	&dev_attr_show_blank_event.attr,
+	&dev_attr_lumus_resolution_double.attr,
 	NULL,
 };
 
