@@ -353,6 +353,7 @@ static int lumus_loffset_x = 0;
 static int lumus_loffset_y = 0;
 static int lumus_roffset_x = 0;
 static int lumus_roffset_y = 0;
+extern int lumus_resolution;
 
 static int mdss_mdp_overlay_pipe_setup(struct msm_fb_data_type *mfd,
 				       struct mdp_overlay *req,
@@ -505,11 +506,11 @@ static int mdss_mdp_overlay_pipe_setup(struct msm_fb_data_type *mfd,
 	pipe->horz_deci = req->horz_deci;
 	pipe->vert_deci = req->vert_deci;
 
-#ifndef DISABLE3D
-	pipe->src.x = 0;
-	pipe->dst.w *=2;
-	pipe->src.w *=2;
-#endif
+	if (lumus_resolution == 1) {
+		pipe->src.x = 0;
+		pipe->dst.w *= 2;
+		pipe->src.w *= 2;
+	}
 
 	memcpy(&pipe->scale, &req->scale, sizeof(struct mdp_scale_data));
 	pipe->src_fmt = fmt;
