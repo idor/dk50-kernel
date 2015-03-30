@@ -1080,16 +1080,11 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
 
 	switch (cmd) {
 	case FBIOGET_VSCREENINFO:
-		if (!lock_fb_info(info))
-			return -ENODEV;
-		var = info->var;
-		unlock_fb_info(info);
-		//lumus hack:
-		var.xres = 1280 * 1;
-		var.yres = 720;
-
-		ret = copy_to_user(argp, &var, sizeof(var)) ? -EFAULT : 0;
-		break;
+		fb = info->fbops;
+		if (fb->fb_ioctl)
+			ret = fb->fb_ioctl(info, cmd, arg);
+		else
+			ret = -ENOTTY;
 	case FBIOPUT_VSCREENINFO:
 		if (copy_from_user(&var, argp, sizeof(var)))
 			return -EFAULT;

@@ -2199,11 +2199,11 @@ static int mdss_fb_display_commit(struct fb_info *info,
 	return ret;
 }
 
-
 static int mdss_fb_ioctl(struct fb_info *info, unsigned int cmd,
 			 unsigned long arg)
 {
 	struct msm_fb_data_type *mfd;
+	struct fb_var_screeninfo var;
 	void __user *argp = (void __user *)arg;
 	struct mdp_page_protection fb_page_protection;
 	int ret = -ENOSYS;
@@ -2225,6 +2225,16 @@ static int mdss_fb_ioctl(struct fb_info *info, unsigned int cmd,
 	}
 
 	switch (cmd) {
+	case FBIOGET_VSCREENINFO:
+		if (!lock_fb_info(info))
+			return -ENODEV;
+		var = info->var;
+		unlock_fb_info(info);
+		//lumus hack:
+		var.xres = 1280 * lumus_resolution;
+		var.yres = 720;
+		ret = copy_to_user(argp, &var, sizeof(var)) ? -EFAULT : 0;
+		break;
 	case MSMFB_CURSOR:
 		ret = mdss_fb_cursor(info, argp);
 		break;
