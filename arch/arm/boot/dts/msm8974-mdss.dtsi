@@ -95,7 +95,6 @@
 			compatible = "qcom,mdss-fb";
 			qcom,memory-reservation-type = "EBI1";
 			qcom,memory-reservation-size = <0x1020000>;
-			qcom,mdss-fb-split = <1366 1366>;
 		};
 
 		mdss_fb3: qcom,mdss_fb_secondary {
