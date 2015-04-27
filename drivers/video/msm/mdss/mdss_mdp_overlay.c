@@ -349,10 +349,10 @@ static inline void __mdss_mdp_overlay_set_chroma_sample(
 		pipe->chroma_sample_v = 0;
 }
 
-static int lumus_loffset_x = 0;
-static int lumus_loffset_y = 0;
-static int lumus_roffset_x = 0;
-static int lumus_roffset_y = 0;
+static int lumus_loffset_x = 43;
+static int lumus_loffset_y = 24;
+static int lumus_roffset_x = 43;
+static int lumus_roffset_y = 24;
 extern int lumus_resolution;
 
 static int mdss_mdp_overlay_pipe_setup(struct msm_fb_data_type *mfd,
