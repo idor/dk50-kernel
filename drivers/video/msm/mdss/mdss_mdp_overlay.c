@@ -25,6 +25,11 @@
 #include <linux/console.h>
 #include <linux/memblock.h>
 #include <linux/sw_sync.h>
+#include <linux/fs.h>
+#include <linux/buffer_head.h>
+#include <linux/firmware.h>
+#include <asm/segment.h>
+#include <asm/uaccess.h>
 
 #include <mach/iommu_domains.h>
 #include <mach/event_timer.h>
@@ -49,6 +54,12 @@
 #define MEM_PROTECT_SD_CTRL 0xF
 
 #define INVALID_PIPE_INDEX 0xFFFF
+
+#define FACTORY_OFFSETS_PATH  "/system/etc/display/offsets.conf"
+#define USER_OFFSETS_PATH  "/data/misc/display/offsets.conf"
+#define MAX_OFFSET_FILE_SIZE 11
+#define MAX_X_OFFSET 86
+#define MAX_Y_OFFSET 48
 
 struct sd_ctrl_req {
 	unsigned int enable;
@@ -349,10 +360,10 @@ static inline void __mdss_mdp_overlay_set_chroma_sample(
 		pipe->chroma_sample_v = 0;
 }
 
-static int lumus_loffset_x = 43;
-static int lumus_loffset_y = 24;
-static int lumus_roffset_x = 43;
-static int lumus_roffset_y = 24;
+static int lumus_loffset_x = MAX_X_OFFSET / 2;
+static int lumus_loffset_y = MAX_Y_OFFSET / 2;
+static int lumus_roffset_x = MAX_X_OFFSET / 2;
+static int lumus_roffset_y = MAX_Y_OFFSET / 2;
 extern int lumus_resolution;
 
 static int mdss_mdp_overlay_pipe_setup(struct msm_fb_data_type *mfd,
