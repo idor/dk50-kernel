@@ -325,7 +325,7 @@ enum resolution {
 };
 
 int lumus_resolution = LUMUS_2D;
-
+int mdss_mdp_lumus_conf_loaded = 0;
 
 static ssize_t mdss_mdp_lumus_res_double_show(struct device *dev,
 		struct device_attribute *attr, char *buf)
@@ -361,17 +361,45 @@ static ssize_t mdss_mdp_lumus_res_double_store(struct device *device,
 	return count;
 }
 
+static ssize_t mdss_mdp_lumus_conf_loaded_store(struct device *device,
+		struct device_attribute *attr, const char *buf, size_t count) {
+
+	int ret = -1;
+	int tmp = 0;
+
+	console_lock();
+	ret = sscanf(buf, "%d", &tmp);
+	console_unlock();
+	if (ret != 1) {
+		pr_err("failed to display enable, return %d", ret);
+		return ret;
+	}
+
+	if (tmp == 1) {
+		mdss_mdp_lumus_conf_loaded = 1;
+	}
+	return count;
+}
+
+static ssize_t mdss_mdp_lumus_conf_loaded_show(struct device *dev,
+		struct device_attribute *attr, char *buf) {
+	int ret;
+	ret = sprintf(buf, "write '1' here, when configuration loading finished, current value = %d", mdss_mdp_lumus_conf_loaded);
+	return ret;
+}
 
 static DEVICE_ATTR(msm_fb_type, S_IRUGO, mdss_fb_get_type, NULL);
 static DEVICE_ATTR(msm_fb_split, S_IRUGO, mdss_fb_get_split, NULL);
 static DEVICE_ATTR(show_blank_event, S_IRUGO, mdss_mdp_show_blank_event, NULL);
 static DEVICE_ATTR(lumus_resolution_double, S_IRUGO | S_IWUSR | S_IWGRP , mdss_mdp_lumus_res_double_show, mdss_mdp_lumus_res_double_store);
+static DEVICE_ATTR(lumus_conf_loaded, S_IRUGO | S_IWUSR | S_IWGRP , mdss_mdp_lumus_conf_loaded_show, mdss_mdp_lumus_conf_loaded_store);
 
 static struct attribute *mdss_fb_attrs[] = {
 	&dev_attr_msm_fb_type.attr,
 	&dev_attr_msm_fb_split.attr,
 	&dev_attr_show_blank_event.attr,
 	&dev_attr_lumus_resolution_double.attr,
+	&dev_attr_lumus_conf_loaded.attr,
 	NULL,
 };
 
