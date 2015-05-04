@@ -913,14 +913,20 @@ static int mdss_fb_blank(int blank_mode, struct fb_info *info)
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)info->par;
 
 	mdss_fb_pan_idle(mfd);
-	if (mfd->op_enable == 0) {
-		if (blank_mode == FB_BLANK_UNBLANK)
-			mfd->suspend.panel_power_on = true;
-		else
-			mfd->suspend.panel_power_on = false;
-		return 0;
+	if (mdss_mdp_lumus_conf_loaded == 1) {
+		// leave this method function as intended once lumus_conf_loaded was set to 1
+		if (mfd->op_enable == 0) {
+			if (blank_mode == FB_BLANK_UNBLANK)
+				mfd->suspend.panel_power_on = true;
+			else
+				mfd->suspend.panel_power_on = false;
+			return 0;
+		}
+		return mdss_fb_blank_sub(blank_mode, info, mfd->op_enable);
 	}
-	return mdss_fb_blank_sub(blank_mode, info, mfd->op_enable);
+	else {
+		return -EPERM;
+	}
 }
 
 /*
