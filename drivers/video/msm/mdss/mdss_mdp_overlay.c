@@ -1876,16 +1876,30 @@ static ssize_t mdss_mdp_lumus_offset_show(struct device *dev,
 
 static ssize_t mdss_mdp_lumus_offset_store(struct device *device,
 		struct device_attribute *attr, const char *buf, size_t count) {
+	int i;
 	int ret = -1;
+	int values[4];
+
 	console_lock();
-	ret = sscanf(buf, "%d %d %d %d", &lumus_loffset_x, &lumus_loffset_y,
-			&lumus_roffset_x, &lumus_roffset_y);
+	ret = sscanf(buf, "%d %d %d %d", &values[0], &values[1], &values[2],
+			&values[3]);
 	console_unlock();
-	if (ret < 0) {
+	if (ret != 4) {
 		pr_err("failed to parse input buffer use: [ldx ldy rdx rdy], return %d",
 				ret);
 		return ret;
 	}
+	for (i = 0; i < 2; i++) {
+		//loop pairs
+		if (values[0 + 2 * i] < 0 || values[0 + 2 * i] > MAX_X_OFFSET)
+			return ret;
+		if (values[1 + 2 * i] < 0 || values[1 + 2 * i] > MAX_Y_OFFSET)
+			return ret;
+	}
+	lumus_loffset_x = values[0];
+	lumus_loffset_y = values[1];
+	lumus_roffset_x = values[2];
+	lumus_roffset_y = values[3];
 	return count;
 }
 
