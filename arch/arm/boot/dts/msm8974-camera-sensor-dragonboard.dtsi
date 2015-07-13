@@ -37,6 +37,7 @@
 		qcom,actuator-src = <&actuator0>;
 		qcom,vdd-cx-supply = <&pm8841_s2>;
 		qcom,vdd-cx-name = "qcom,vdd-cx";
+		cam_vdig-supply = <&pm8941_l3>;
 		cam_vana-supply = <&pm8941_l17>;
 		cam_vio-supply = <&pm8941_lvs3>;
 		cam_vaf-supply = <&pm8941_l23>;
