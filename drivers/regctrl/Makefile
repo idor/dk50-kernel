@@ -1,1 +1,1 @@
-obj-m += regctrl.o
+obj-y += regctrl.o

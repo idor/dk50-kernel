@@ -2,81 +2,108 @@
 #include <linux/init.h>
 #include <linux/device.h>
 #include <linux/fs.h>
+#include <asm/io.h>
+#include <linux/delay.h>
+#include <linux/cdev.h>
+#include <asm/uaccess.h>
 #include <linux/ioctl.h>
+#include <linux/uaccess.h>
 
 #include "regctrl.h"
 
-static ssize_t regctrl_read(struct file * fd, char __user * buf, size_t count, loff_t * offset) {
-    return 0;
-}
-static ssize_t regctrl_write(struct file * fd, const char __user * buf, size_t count, loff_t * offset) {
-    return 0;
-}
-static long regctrl_unlocked_ioctl(struct file * fd, unsigned int cmd, unsigned long arg) {
+long regctrl_unlocked_ioctl(struct file * fd, unsigned int cmd,
+                                unsigned long arg) {
+    struct regctrl_command* user_req = (struct regctrl_command *)arg;
+    int* virt_addr;
 	if (_IOC_TYPE(cmd) != REGCTRL_MAGIC) {
+        printk(KERN_ERR "REGCTRL_MAGIC number does not match \n");
 		return -ENOTTY;
 	}
+
 	switch(cmd) {
-        case REG_REQ_IOCTL:
+        case REG_READ_IOCTL:
         {
-            int reg_id;
-            reg_id = arg;
-            /*
-                Set here the params which access the register.
-            */
+            struct regctrl_command req;
+            if (copy_from_user(&req,(void *) arg,
+                    sizeof(struct regctrl_command)) != 0) {
+                printk(KERN_ERR "Failed to copy from user \n");
+			    return -EFAULT;
+		    }
+		    virt_addr = ioremap(req.addr, 4);
+            req.value = readl(virt_addr);
+            mb();
+            put_user(req.value, &user_req->value);
+            iounmap(virt_addr);
             break;
+        }
+        case REG_WRITE_IOCTL:
+        {
+            struct regctrl_command req;
+            if (copy_from_user(&req,(void *) arg,
+                    sizeof(struct regctrl_command)) != 0) {
+                printk(KERN_ERR "Failed to copy from user \n");
+			    return -EFAULT;
+		    }
+            virt_addr = ioremap(req.addr, 4);
+            writel(req.value, virt_addr);
+            mb();
+            iounmap(virt_addr);
+            break;
+        }
+        default:
+        {
+            printk(KERN_ERR "default \n");
         }
 	}
     return 0;
 }
 
-static int regctrl_mmap(struct file * fd, struct vm_area_struct * area) {
-    return 0;
-}
-static int regctrl_open(struct inode * inode, struct file * fd) {
-    printk(KERN_INFO "%s\n", __FUNCTION__);
-    return 0;
-}
-static int regctrl_flush(struct file * fd , fl_owner_t id) {
-    printk(KERN_INFO "%s\n", __FUNCTION__);
-    return 0;
-}
-static int regctrl_release(struct inode * node, struct file * fd) {
+int regctrl_open(struct inode * inode, struct file * fd) {
     printk(KERN_INFO "%s\n", __FUNCTION__);
     return 0;
 }
 
 struct file_operations fops = {
     .owner = THIS_MODULE,
-	.read = regctrl_read,
-	.write = regctrl_write,
 	.unlocked_ioctl = regctrl_unlocked_ioctl,
-	.mmap = regctrl_mmap,
 	.open = regctrl_open,
-	.flush = regctrl_flush,
-	.release = regctrl_release
 };
 
 static int __init regctrl_init(void)
 {
+    dev_t curr_dev;
     int res;
-    printk ("regctrl Init!\n");
+    printk(KERN_INFO "regctrl Init!\n");
     res = register_chrdev(0, DEVICE_NAME, &fops);
-    if (res < 0)
+    if (res < 0){
+        printk (KERN_INFO "register_chrdev!\n");
 	    goto out;
+	}
     majorNumber = res;
+    printk(KERN_INFO "majorNumber: %d\n", majorNumber);
+
 
 	regctrl_dev_class = class_create(THIS_MODULE, DEVICE_CLASS);
 	if (IS_ERR(regctrl_dev_class)) {
 		res = PTR_ERR(regctrl_dev_class);
 		goto out_unreg_chrdev;
 	}
+
+    cdev_init(&regctrl_cdev, &fops);
+    curr_dev = MKDEV(majorNumber, 0);
+    device_create(regctrl_dev_class, NULL, curr_dev, NULL, "regctrl");
+    cdev_add(&regctrl_cdev, curr_dev, 1);
+
+    printk(KERN_INFO "Driver will receive ioctl: REG_READ_IOCTL: 0x%x \n",
+                REG_READ_IOCTL);
+    printk(KERN_INFO "Driver will receive ioctl: REG_WRITE_IOCTL: 0x%x \n",
+                REG_WRITE_IOCTL);
     return 0;
 
 out_unreg_chrdev:
     unregister_chrdev(majorNumber, DEVICE_NAME);
 out:
-    printk(KERN_ERR "%s: Driver Initialisation failed\n", __FILE__);
+    printk(KERN_INFO "Driver Initialisation failed\n");
     return res;
 }
 
