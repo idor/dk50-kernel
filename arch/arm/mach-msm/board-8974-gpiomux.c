@@ -307,6 +307,22 @@ static struct msm_gpiomux_config som_3v3_pwr_en_configs[] __initdata = {
 };
 
 static struct msm_gpiomux_config msm_blsp_configs[] __initdata = {
+	/* Display Led Driver */
+   {
+            .gpio      = 10,                /* BLSP1 QUP6 I2C_DAT */
+            .settings = {
+				[GPIOMUX_SUSPENDED] = &gpio_i2c_config,
+				[GPIOMUX_ACTIVE] = &gpio_i2c_act_config,
+            },
+    },
+    {
+            .gpio      = 11,                /* BLSP1 QUP6 I2C_CLK */
+            .settings = {
+				[GPIOMUX_SUSPENDED] = &gpio_i2c_config,
+				[GPIOMUX_ACTIVE] = &gpio_i2c_act_config,
+            },
+    },
+	/* END Display Led Driver */
 	/* EEPROM I2C device */
 	{
 		.gpio      = 83,		/* BLSP11 QUP I2C_DAT */
