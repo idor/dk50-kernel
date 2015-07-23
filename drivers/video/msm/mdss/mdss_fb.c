@@ -72,6 +72,10 @@ static u32 mdss_fb_pseudo_palette[16] = {
 
 static struct msm_mdp_interface *mdp_instance;
 
+static struct i2c_board_info lm3435_hwmon_info = {
+       I2C_BOARD_INFO("lm3435", 0x28),
+};
+
 static int mdss_fb_register(struct msm_fb_data_type *mfd);
 static int mdss_fb_open(struct fb_info *info, int user);
 static int mdss_fb_release(struct fb_info *info, int user);
@@ -197,6 +201,17 @@ end:
 
 static int lcd_backlight_registered;
 
+static void lm3435_led_work(struct led_classdev *led_cdev,enum led_brightness value) {
+    struct msm_fb_data_type *mfd = dev_get_drvdata(led_cdev->dev->parent);
+    if(!mfd->client) {
+        pr_err("%s: client does not exist :(  \n", __func__);
+        return;
+    }
+    i2c_smbus_write_byte_data(mfd->client, 0x1, value);
+    i2c_smbus_write_byte_data(mfd->client, 0x2, value);
+    i2c_smbus_write_byte_data(mfd->client, 0x3, value);
+}
+
 static void mdss_fb_set_bl_brightness(struct led_classdev *led_cdev,
 				      enum led_brightness value)
 {
@@ -217,6 +232,7 @@ static void mdss_fb_set_bl_brightness(struct led_classdev *led_cdev,
 	if (!IS_CALIB_MODE_BL(mfd) && (!mfd->ext_bl_ctrl || !value ||
 							!mfd->bl_level)) {
 		mutex_lock(&mfd->bl_lock);
+        lm3435_led_work(led_cdev, value);
 		mdss_fb_set_backlight(mfd, bl_lvl);
 		mutex_unlock(&mfd->bl_lock);
 	}
@@ -501,6 +517,8 @@ static int mdss_fb_probe(struct platform_device *pdev)
 		pr_err("pm_runtime: fail to set active.\n");
 	pm_runtime_enable(mfd->fbi->dev);
 
+    mfd->adapter = i2c_get_adapter(5);
+    mfd->client = i2c_new_device(mfd->adapter, &lm3435_hwmon_info);
 	/* android supports only one lcd-backlight/lcd for now */
 	if (!lcd_backlight_registered) {
 

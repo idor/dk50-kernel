@@ -223,6 +223,8 @@ struct msm_fb_data_type {
 
 	u32 dcm_state;
 	struct list_head proc_list;
+    struct i2c_client* client;
+    struct i2c_adapter* adapter;
 };
 
 static inline void mdss_fb_update_notify_update(struct msm_fb_data_type *mfd)
