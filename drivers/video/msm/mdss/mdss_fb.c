@@ -59,6 +59,15 @@
 #define MDSS_FB_NUM 2
 #endif
 
+#define LOWBITS 0x03
+#define G_OFFSET 0
+#define B_OFFSET 2
+#define R_OFFSET 4
+#define LO_ADDR 0x00
+#define G_HI_ADDR 0x01
+#define B_HI_ADDR 0x02
+#define R_HI_ADDR 0x03
+
 #define MAX_FBI_LIST 32
 static struct fb_info *fbi_list[MAX_FBI_LIST];
 static int fbi_list_index;
@@ -75,6 +84,14 @@ static struct msm_mdp_interface *mdp_instance;
 static struct i2c_board_info lm3435_hwmon_info = {
        I2C_BOARD_INFO("lm3435", 0x28),
 };
+
+struct color_calib_node {
+    short unsigned int r;
+    short unsigned int g;
+    short unsigned int b;
+};
+
+static struct color_calib_node *color_calib_map[255];
 
 static int mdss_fb_register(struct msm_fb_data_type *mfd);
 static int mdss_fb_open(struct fb_info *info, int user);
@@ -201,15 +218,30 @@ end:
 
 static int lcd_backlight_registered;
 
+/*
+ * value serves as an index in the color_calib_map array.
+ */
 static void lm3435_led_work(struct led_classdev *led_cdev,enum led_brightness value) {
     struct msm_fb_data_type *mfd = dev_get_drvdata(led_cdev->dev->parent);
     if(!mfd->client) {
         pr_err("%s: client does not exist :(  \n", __func__);
         return;
     }
-    i2c_smbus_write_byte_data(mfd->client, 0x1, value);
-    i2c_smbus_write_byte_data(mfd->client, 0x2, value);
-    i2c_smbus_write_byte_data(mfd->client, 0x3, value);
+    if(color_calib_map[value]) {
+        char low_value = 0;
+        i2c_smbus_write_byte_data(mfd->client, G_HI_ADDR,
+                                    (char) (color_calib_map[value]->g >> 2));
+        i2c_smbus_write_byte_data(mfd->client, B_HI_ADDR,
+                                    (char) (color_calib_map[value]->b >> 2));
+        i2c_smbus_write_byte_data(mfd->client, R_HI_ADDR,
+                                    (char) (color_calib_map[value]->r >> 2));
+
+        low_value |= (color_calib_map[value]->r & LOWBITS) << R_OFFSET;
+        low_value |= (color_calib_map[value]->g & LOWBITS) << G_OFFSET;
+        low_value |= (color_calib_map[value]->b & LOWBITS) << B_OFFSET;
+
+        i2c_smbus_write_byte_data(mfd->client, LO_ADDR, low_value);
+    }
 }
 
 static void mdss_fb_set_bl_brightness(struct led_classdev *led_cdev,
@@ -377,6 +409,49 @@ static ssize_t mdss_mdp_lumus_res_double_store(struct device *device,
 	return count;
 }
 
+static ssize_t mdss_mdp_wled_calib_store(struct device *device,
+		struct device_attribute *attr, const char *buf, size_t count) {
+    int ret;
+    unsigned int red,green,blue,value;
+
+    console_lock();
+    ret = sscanf(buf,"%d %d %d %d", &value, &red, &green, &blue);
+    console_unlock();
+    if(ret != 4) {
+        pr_err("%s: failed to parse input buffer, expectin 4 ints.\n",
+                __func__);
+        return -EIO;
+    }
+
+    if(value > 255 || red > 1023 || green > 1023 || blue > 1023) {
+        pr_err("%s: Parsed values are not in range, expecting:\n", __func__);
+        pr_err("%s: \t[0,255] [0,1023] [0,1023] [0,1023].\n", __func__);
+        return -EINVAL;
+    }
+
+    pr_info("%s: Parsed color_calib_map[value:%d] = [r:%d, g:%d, b:%d].\n",
+                __func__, value, red, green, blue);
+    if(!color_calib_map[value]) {
+        color_calib_map[value] = (struct color_calib_node *)kmalloc(
+            sizeof(struct color_calib_node),GFP_KERNEL);
+        if(!color_calib_map[value]) {
+            pr_err("%s: failed to kmalloc color_calib_node :( \n", __func__);
+            return -EIO;
+        }
+    }
+    color_calib_map[value]->r = red;
+    color_calib_map[value]->g = green;
+    color_calib_map[value]->b = blue;
+
+
+    return count;
+}
+
+static ssize_t mdss_mdp_wled_calib_show(struct device *dev,
+		struct device_attribute *attr, char *buf) {
+    return 0;
+}
+
 static ssize_t mdss_mdp_lumus_conf_loaded_store(struct device *device,
 		struct device_attribute *attr, const char *buf, size_t count) {
 
@@ -409,6 +484,7 @@ static DEVICE_ATTR(msm_fb_split, S_IRUGO, mdss_fb_get_split, NULL);
 static DEVICE_ATTR(show_blank_event, S_IRUGO, mdss_mdp_show_blank_event, NULL);
 static DEVICE_ATTR(lumus_resolution_double, S_IRUGO | S_IWUSR | S_IWGRP , mdss_mdp_lumus_res_double_show, mdss_mdp_lumus_res_double_store);
 static DEVICE_ATTR(lumus_conf_loaded, S_IRUGO | S_IWUSR | S_IWGRP , mdss_mdp_lumus_conf_loaded_show, mdss_mdp_lumus_conf_loaded_store);
+static DEVICE_ATTR(lumus_wled_calib, S_IRUGO | S_IWUSR | S_IWGRP , mdss_mdp_wled_calib_show, mdss_mdp_wled_calib_store);
 
 static struct attribute *mdss_fb_attrs[] = {
 	&dev_attr_msm_fb_type.attr,
@@ -416,6 +492,7 @@ static struct attribute *mdss_fb_attrs[] = {
 	&dev_attr_show_blank_event.attr,
 	&dev_attr_lumus_resolution_double.attr,
 	&dev_attr_lumus_conf_loaded.attr,
+	&dev_attr_lumus_wled_calib.attr,
 	NULL,
 };
 
