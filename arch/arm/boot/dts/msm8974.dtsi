@@ -636,6 +636,7 @@
 		qcom,bam-consumer-pipe-index = <18>;
 		qcom,bam-producer-pipe-index = <19>;
 		qcom,master-id = <84>;
+		status = "disable";
 	};
 
 	tspp: msm_tspp@f99d8000 {
@@ -918,6 +919,23 @@
 		qcom,scl-gpio = <&msmgpio 11 0>;
 		qcom,sda-gpio = <&msmgpio 10 0>;
 		qcom,master-id = <86>;
+		status = "ok";
+	};
+
+	i2c_6: i2c@f9966000 { /* BLSP-2 QUP-3, BLSP10 */
+		cell-index = <6>;
+		compatible = "qcom,i2c-qup";
+		reg = <0xf9966000 0x1000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+		reg-names = "qup_phys_addr";
+		interrupts = <0 104 0>;
+		interrupt-names = "qup_err_intr";
+		qcom,i2c-bus-freq = <400000>;
+		qcom,i2c-src-freq = <19200000>;
+		qcom,scl-gpio = <&msmgpio 56 0>;
+		qcom,sda-gpio = <&msmgpio 55 0>;
+		qcom,master-id = <84>;
 		status = "ok";
 	};
 
