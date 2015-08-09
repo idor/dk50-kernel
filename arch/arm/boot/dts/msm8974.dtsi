@@ -851,7 +851,7 @@
 		qcom,scl-gpio = <&msmgpio 3 0>;
 		qcom,sda-gpio = <&msmgpio 2 0>;
 		qcom,master-id = <86>;
-		status = "disabled"; /*currently used as spi_0*/
+		status = "ok"; /*currently used as spi_0*/
 	};
 
 	i2c_2: i2c@f9924000 { /* BLSP1 QUP1 - BLSP2 */
@@ -961,7 +961,7 @@
 		qcom,bam-consumer-pipe-index = <12>;
 		qcom,bam-producer-pipe-index = <13>;
 		qcom,master-id = <86>;
-		status = "ok";
+		status = "disabled";
 	};
 
 	qcom,clock-krait@f9016000 {

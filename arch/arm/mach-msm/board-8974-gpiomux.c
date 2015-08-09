@@ -307,6 +307,22 @@ static struct msm_gpiomux_config som_3v3_pwr_en_configs[] __initdata = {
 };
 
 static struct msm_gpiomux_config msm_blsp_configs[] __initdata = {
+    /* Display2 */
+    {
+            .gpio      = 2,                /* BLSP2 QUP3 I2C_DATA */
+            .settings = {
+				[GPIOMUX_SUSPENDED] = &gpio_i2c_config,
+				[GPIOMUX_ACTIVE] = &gpio_i2c_act_config,
+            },
+    },
+    {
+            .gpio      = 3,                /* BLSP2 QUP3 I2C_CLK */
+            .settings = {
+				[GPIOMUX_SUSPENDED] = &gpio_i2c_config,
+				[GPIOMUX_ACTIVE] = &gpio_i2c_act_config,
+            },
+    },
+    /* END Display2 */
     /* IMU */
     {
             .gpio      = 54,                /* BLSP2 QUP3 IRQ */
