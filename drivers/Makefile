@@ -147,4 +147,4 @@ obj-$(CONFIG_CORESIGHT)		+= coresight/
 obj-$(CONFIG_BIF)		+= bif/
 obj-$(CONFIG_SENSORS)		+= sensors/
 obj-y				+= regctrl/
-obj-$(CONFIG_IIO)	+= iio/
+obj-y	+= iio/
