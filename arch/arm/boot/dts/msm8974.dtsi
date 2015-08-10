@@ -937,6 +937,40 @@
 		qcom,sda-gpio = <&msmgpio 55 0>;
 		qcom,master-id = <84>;
 		status = "ok";
+
+		mpu9250@68 {
+			compatible = "mpu9250";
+			reg = <0x68>;
+			interrupt-parent = <&msmgpio>;
+			inven,int_config = <0x00>;
+			inven,level_shifter = <0x00>;
+//			inven,vcc_i2c-supply = <&pm8226_lvs1>;
+//			inven,vdd_ana-supply = <&pm8226_l19>;
+			interrupts = <35 0x2>;
+			axis_map_x = <1>;
+			axis_map_y = <0>;
+			axis_map_z = <2>;
+			negate_x = <0>;
+			negate_y = <0>;
+			negate_z = <1>;
+			/* If no compass sensor,
+			 * replace "compass" with "none"
+			 */
+			inven,secondary_type = "compass";
+			inven,secondary_name = "ak8963";
+			inven,secondary_reg  = <0x0C>;
+			inven,secondary_axis_map_x = <1>;
+			inven,secondary_axis_map_y = <0>;
+			inven,secondary_axis_map_z = <2>;
+			inven,secondary_negate_x = <0>;
+			inven,secondary_negate_y = <0>;
+			inven,secondary_negate_z = <1>;
+			/* If pressure sensor,
+			 * replace "none" with "pressure"
+			 */
+			inven,aux_type = "none";
+			status = "ok";
+		};
 	};
 
 	spi_0: spi@f9923000 { /* BLSP1 QUP1 */

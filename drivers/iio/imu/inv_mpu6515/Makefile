@@ -13,8 +13,9 @@ inv-mpu-iio-objs += dmpDefaultMPU6050.o
 inv-mpu-iio-objs += inv_slave_compass.o
 inv-mpu-iio-objs += inv_slave_pressure.o
 
+
 #ifeq ($(CONFIG_INV_KERNEL_3_10), y)
-CFLAGS_inv_mpu_core.o      += -Idrivers/iio -Iinclude/linux/iio
+CFLAGS_inv_mpu_core.o      += -Idrivers/iio -Iinclude/linux/iio -DCONFIG_DTS_INV_MPU_IIO
 CFLAGS_inv_mpu_ring.o      += -DCONFIG_IIO_BUFFER -Idrivers/iio -Iinclude/linux/iio -Iinclude
 CFLAGS_inv_mpu_trigger.o   += -DCONFIG_IIO_TRIGGER -Idrivers/iio -Iinclude/linux/iio
 CFLAGS_inv_mpu_misc.o      += -Idrivers/iio -Iinclude/linux/iio
@@ -45,12 +46,9 @@ CFLAGS_inv_slave_bma250.o   += -Idrivers/iio
 endif
 
 # compile Invensense MPU IIO driver as DTS
-ifeq ($(CONFIG_DTS_INV_MPU_IIO), y)
 inv-mpu-iio-objs += inv_mpu_dts.o
 #ifeq ($(CONFIG_INV_KERNEL_3_10), y)
 CFLAGS_inv_mpu_dts.o   += -Idrivers/iio
 #else
 #CFLAGS_inv_mpu_dts.o   += -Idrivers/staging/iio
 #endif
-endif
-

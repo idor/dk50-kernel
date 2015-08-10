@@ -90,11 +90,11 @@ struct mpu_platform_data {
 	enum secondary_slave_type aux_slave_type;
 	enum ext_slave_id aux_slave_id;
 	__u16 aux_i2c_addr;
-#ifdef CONFIG_DTS_INV_MPU_IIO
+//#ifdef CONFIG_DTS_INV_MPU_IIO
 	int (*power_on)(struct mpu_platform_data *);
 	int (*power_off)(struct mpu_platform_data *);
 	struct regulator *vdd_ana;
 	struct regulator *vdd_i2c;
-#endif
+//#endif
 };
 #endif	/* __MPU_H_ */

@@ -10,24 +10,24 @@
 
 int inv_mpu_power_on(struct mpu_platform_data *pdata)
 {
-	int err ;
-
+	int err = 0;
+/*
 	err = regulator_enable(pdata->vdd_ana);
 	err = regulator_enable(pdata->vdd_i2c);
 	pr_debug(KERN_INFO "inv_mpu_power_on call");
-
+*/
 	return err ;
 
 }
 
 int inv_mpu_power_off(struct mpu_platform_data *pdata)
 {
-	int err ;
-
+	int err = 0;
+/*
 	err = regulator_disable(pdata->vdd_ana);
 	err = regulator_disable(pdata->vdd_i2c);
 	pr_debug(KERN_INFO "inv_mpu_power_off call");
-
+*/
 	return err;
 }
 
@@ -254,13 +254,13 @@ int invensense_mpu_parse_dt(struct device *dev, struct mpu_platform_data *pdata)
 	if (IS_ERR(pdata->vdd_ana)) {
 		rc = PTR_ERR(pdata->vdd_ana);
 		dev_err(dev, "Regulator get failed vdd_ana-supply rc=%d\n", rc);
-		return rc;
+		rc = 0;
 	}
 	pdata->vdd_i2c = regulator_get(dev, "inven,vcc_i2c");
 	if (IS_ERR(pdata->vdd_i2c)) {
 		rc = PTR_ERR(pdata->vdd_i2c);
 		dev_err(dev, "Regulator get failed vcc-i2c-supply rc=%d\n", rc);
-		return rc;
+		rc = 0;
 	}
 	pdata->power_on = inv_mpu_power_on;
 	pdata->power_off = inv_mpu_power_off;
