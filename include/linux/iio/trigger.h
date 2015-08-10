@@ -113,8 +113,32 @@ static inline void *iio_trigger_get_drvdata(struct iio_trigger *trig)
 	return dev_get_drvdata(&trig->dev);
 }
 
+/**
+ * iio_trigger_register() - register a trigger with the IIO core
+ * @trig_info:	trigger to be registered
+ **/
+int iio_trigger_register(struct iio_trigger *trig_info);
 
+/**
+ * iio_trigger_unregister() - unregister a trigger from the core
+ * @trig_info:	trigger to be unregistered
+ **/
+void iio_trigger_unregister(struct iio_trigger *trig_info);
 
+/**
+ * iio_trigger_poll() - called on a trigger occurring
+ * @trig:	trigger which occurred
+ * @time:	timestamp when trigger occurred
+ *
+ * Typically called in relevant hardware interrupt handler.
+ **/
+void iio_trigger_poll(struct iio_trigger *trig, s64 time);
+void iio_trigger_poll_chained(struct iio_trigger *trig, s64 time);
+
+irqreturn_t iio_trigger_generic_data_rdy_poll(int irq, void *private);
+
+__printf(1, 2) struct iio_trigger *iio_trigger_alloc(const char *fmt, ...);
+void iio_trigger_free(struct iio_trigger *trig);
 
 #else
 struct iio_trigger;

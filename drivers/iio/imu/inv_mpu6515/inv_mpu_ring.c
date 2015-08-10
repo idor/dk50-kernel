@@ -27,43 +27,12 @@
 #include <linux/poll.h>
 #include <linux/miscdevice.h>
 
-
-/*
 #include "iio.h"
 #include "kfifo_buf.h"
 #include "trigger_consumer.h"
 #include "sysfs.h"
-*/
-
-#include <linux/iio/iio.h>
-#include <linux/iio/buffer.h>
-#include <linux/iio/kfifo_buf.h>
-#include <linux/iio/trigger_consumer.h>
-#include <linux/iio/sysfs.h>
 
 #include "inv_mpu_iio.h"
-
-#define CONFIG_INV_KERNEL_3_10
-
-struct iio_buffer {
-	int					length;
-	int					bytes_per_datum;
-	struct attribute_group			*scan_el_attrs;
-	long					*scan_mask;
-	bool					scan_timestamp;
-	const struct iio_buffer_access_funcs	*access;
-	struct list_head			scan_el_dev_attr_list;
-	struct attribute_group			scan_el_group;
-	wait_queue_head_t			pollq;
-	bool					stufftoread;
-	const struct attribute_group *attrs;
-	struct list_head			demux_list;
-	unsigned char				*demux_bounce;
-	struct list_head			buffer_list;
-};
-
-int iio_push_to_buffers(struct iio_dev *indio_dev, unsigned char *data);
-int iio_sw_buffer_preenable(struct iio_dev *indio_dev);
 
 static u8 fifo_data[HARDWARE_FIFO_SIZE + HEADERED_Q_BYTES];
 static int inv_process_batchmode(struct inv_mpu_state *st);
