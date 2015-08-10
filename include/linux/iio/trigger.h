@@ -12,7 +12,9 @@
 #ifndef _IIO_TRIGGER_H_
 #define _IIO_TRIGGER_H_
 
+
 #ifdef CONFIG_IIO_TRIGGER
+#define CONFIG_IIO_CONSUMERS_PER_TRIGGER 2
 struct iio_subirq {
 	bool enabled;
 };

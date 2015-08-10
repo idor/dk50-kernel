@@ -15,8 +15,8 @@ inv-mpu-iio-objs += inv_slave_pressure.o
 
 #ifeq ($(CONFIG_INV_KERNEL_3_10), y)
 CFLAGS_inv_mpu_core.o      += -Idrivers/iio -Iinclude/linux/iio
-CFLAGS_inv_mpu_ring.o      += -Idrivers/iio -Iinclude/linux/iio
-CFLAGS_inv_mpu_trigger.o   += -Idrivers/iio -Iinclude/linux/iio
+CFLAGS_inv_mpu_ring.o      += -DCONFIG_IIO_BUFFER -Idrivers/iio -Iinclude/linux/iio -Iinclude
+CFLAGS_inv_mpu_trigger.o   += -DCONFIG_IIO_TRIGGER -Idrivers/iio -Iinclude/linux/iio
 CFLAGS_inv_mpu_misc.o      += -Idrivers/iio -Iinclude/linux/iio
 CFLAGS_inv_mpu3050_iio.o   += -Idrivers/iio -Iinclude/linux/iio
 CFLAGS_dmpDefaultMPU6050.o += -Idrivers/iio -Iinclude/linux/iio
