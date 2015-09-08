@@ -600,9 +600,6 @@ int msm_sensor_config(struct msm_sensor_ctrl_t *s_ctrl, void __user *argp)
 		break;
 	case CFG_SET_SLAVE_INFO: {
 		struct msm_camera_sensor_slave_info sensor_slave_info;
-		struct msm_camera_power_ctrl_t *p_ctrl;
-		uint16_t size;
-		int s_index = 0;
 		if (copy_from_user(&sensor_slave_info,
 				(void *)cdata->cfg.setting,
 				sizeof(sensor_slave_info))) {
@@ -615,102 +612,6 @@ int msm_sensor_config(struct msm_sensor_ctrl_t *s_ctrl, void __user *argp)
 			s_ctrl->sensor_i2c_client->cci_client->sid =
 				sensor_slave_info.slave_addr >> 1;
 		}
-
-		/* Update sensor address type */
-		s_ctrl->sensor_i2c_client->addr_type =
-			sensor_slave_info.addr_type;
-		p_ctrl = &s_ctrl->sensordata->power_info;
-
-		/* Update power up sequence */
-		size = sensor_slave_info.power_setting_array.size;
-		if (p_ctrl->power_setting_size < size) {
-			struct msm_sensor_power_setting *tmp;
-			tmp = kmalloc(sizeof(*tmp) * size, GFP_KERNEL);
-			if (!tmp) {
-				pr_err("%s: failed to alloc mem\n", __func__);
-				rc = -ENOMEM;
-				break;
-			}
-			kfree(p_ctrl->power_setting);
-			p_ctrl->power_setting = tmp;
-		}
-		p_ctrl->power_setting_size = size;
-
-
-		rc = copy_from_user(p_ctrl->power_setting, (void *)
-			sensor_slave_info.power_setting_array.power_setting,
-			size * sizeof(struct msm_sensor_power_setting));
-		if (rc) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
-			kfree(sensor_slave_info.power_setting_array.
-				power_setting);
-			rc = -EFAULT;
-			break;
-		}
-		CDBG("%s sensor id %x\n", __func__,
-			sensor_slave_info.slave_addr);
-		CDBG("%s sensor addr type %d\n", __func__,
-			sensor_slave_info.addr_type);
-		CDBG("%s sensor reg %x\n", __func__,
-			sensor_slave_info.sensor_id_info.sensor_id_reg_addr);
-		CDBG("%s sensor id %x\n", __func__,
-			sensor_slave_info.sensor_id_info.sensor_id);
-		for (s_index = 0; s_index <
-			p_ctrl->power_setting_size; s_index++) {
-			CDBG("%s i %d power up setting %d %d %ld %d\n",
-				__func__,
-				s_index,
-				p_ctrl->power_setting[s_index].seq_type,
-				p_ctrl->power_setting[s_index].seq_val,
-				p_ctrl->power_setting[s_index].config_val,
-				p_ctrl->power_setting[s_index].delay);
-		}
-
-		/* Update power down sequence */
-		if (!sensor_slave_info.power_setting_array.power_down_setting ||
-			0 == size) {
-			pr_err("%s: Missing dedicated power down sequence\n",
-				__func__);
-			break;
-		}
-		size = sensor_slave_info.power_setting_array.size_down;
-
-		if (p_ctrl->power_down_setting_size < size) {
-			struct msm_sensor_power_setting *tmp;
-			tmp = kmalloc(sizeof(*tmp) * size, GFP_KERNEL);
-			if (!tmp) {
-				pr_err("%s: failed to alloc mem\n", __func__);
-				rc = -ENOMEM;
-				break;
-			}
-			kfree(p_ctrl->power_down_setting);
-			p_ctrl->power_down_setting = tmp;
-		}
-		p_ctrl->power_down_setting_size = size;
-
-
-		rc = copy_from_user(p_ctrl->power_down_setting, (void *)
-			sensor_slave_info.power_setting_array.
-			power_down_setting,
-			size * sizeof(struct msm_sensor_power_setting));
-		if (rc) {
-			pr_err("%s:%d failed\n", __func__, __LINE__);
-			kfree(sensor_slave_info.power_setting_array.
-				power_down_setting);
-			rc = -EFAULT;
-			break;
-		}
-		for (s_index = 0; s_index <
-			p_ctrl->power_down_setting_size; s_index++) {
-			CDBG("%s i %d power DOWN setting %d %d %ld %d\n",
-				__func__,
-				s_index,
-				p_ctrl->power_down_setting[s_index].seq_type,
-				p_ctrl->power_down_setting[s_index].seq_val,
-				p_ctrl->power_down_setting[s_index].config_val,
-				p_ctrl->power_down_setting[s_index].delay);
-		}
-
 		break;
 	}
 	case CFG_WRITE_I2C_ARRAY: {
