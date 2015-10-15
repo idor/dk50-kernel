@@ -591,6 +591,7 @@ static struct msm_gpiomux_config leds_configs[] __initdata = {
 			[GPIOMUX_SUSPENDED] = &gpio_out_sus_cfg,
 		},
 	},
+#if 0
 	{
 		.gpio = 2, /* CCI_I2C_SDA0 */
 		.settings = {
@@ -605,6 +606,7 @@ static struct msm_gpiomux_config leds_configs[] __initdata = {
 			[GPIOMUX_SUSPENDED] = &gpio_out_sus_cfg,
 		},
 	},
+#endif
 };
 
 static void msm_gpiomux_sdc3_install(void){

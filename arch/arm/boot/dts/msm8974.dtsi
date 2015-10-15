@@ -922,7 +922,7 @@
 		status = "ok";
 	};
 
-	i2c_6: i2c@f9966000 { /* BLSP-2 QUP-3, BLSP10 */
+	i2c_6: i2c@f9966000 { // BLSP-2 QUP-3, BLSP10 
 		cell-index = <6>;
 		compatible = "qcom,i2c-qup";
 		reg = <0xf9966000 0x1000>;
